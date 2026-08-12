@@ -1,0 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+:root { --ink:#081521; --navy:#0b2030; --sand:#e8d6b3; --cream:#f7f4ee; --sea:#2e8f98; --muted:#65717b; --line:#dfe3e5; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { margin:0; background:var(--cream); color:var(--ink); font-family:'IBM Plex Sans Arabic',sans-serif; }
+button,input,select { font:inherit; }
+a { color:inherit; text-decoration:none; }
+.container { width:min(1180px,calc(100% - 40px)); margin:auto; }
+.english { font-family:'Manrope',sans-serif; }
+
+@media(max-width:640px){ .container{width:min(100% - 28px,1180px)} }

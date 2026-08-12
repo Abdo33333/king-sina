@@ -1,28 +1,32 @@
 # KING SINA — النقل البري
 
-Premium booking platform for KING SINA, a ground transportation company serving Cairo and Sinai destinations.
+Premium Cairo → Sinai transportation booking platform.
 
-## Current phase
+## Product flow
 
-Phase 1 establishes the production-oriented Next.js foundation and premium Arabic RTL homepage/booking search experience.
+Search → Select trip → Passenger details → Review → Payment → Confirmation → Digital ticket.
 
-## Planned modules
+## Current architecture
 
-- Routes and destination management
-- Real trip availability
-- Passenger booking flow
-- Payment gateway abstraction (Paymob / Fawry / MyFatoorah)
-- Booking confirmation + QR ticket
-- Admin dashboard
-- Customer booking lookup
-- Arabic / English i18n
-- Analytics and conversion tracking
+- Next.js + TypeScript
+- PostgreSQL + Prisma schema
+- Arabic RTL / English-ready UI
+- Booking availability helpers
+- Payment provider abstraction
+- Configurable environment variables
+- Route/destination content designed to accept real operational data later
 
-## Run locally
+## Production requirements before launch
 
-```bash
-npm install
-npm run dev
-```
+1. Provision PostgreSQL and run Prisma migrations.
+2. Configure authentication secrets.
+3. Select a real Egyptian payment gateway and configure its server-side credentials.
+4. Implement signed payment webhooks and idempotent payment confirmation.
+5. Add real routes, schedules, prices, vehicle capacity, contact information and policies.
+6. Add email/WhatsApp/SMS notification providers as required.
+7. Configure analytics and conversion events.
+8. Run responsive, accessibility, security and payment-flow QA.
 
-Business information, schedules, pricing, vehicle data, contact details and payment credentials are intentionally configurable and are not fabricated in this initial build.
+## Important
+
+No payment is considered successful based on client-side state. The production payment flow must verify gateway callbacks/webhooks server-side before changing a booking to `PAID`/`CONFIRMED`.

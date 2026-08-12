@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role { CUSTOMER ADMIN }
+enum TripStatus { SCHEDULED BOARDING DEPARTED COMPLETED CANCELLED }
+enum BookingStatus { PENDING CONFIRMED CANCELLED EXPIRED }
+enum PaymentStatus { PENDING PAID FAILED REFUNDED }
+enum PaymentMethod { CARD CASH }
+enum VehicleStatus { ACTIVE MAINTENANCE INACTIVE }
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  phone        String?
+  role         Role      @default(CUSTOMER)
+  bookings     Booking[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Destination {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  nameAr      String
+  nameEn      String
+  description String?
+  image       String?
+  active      Boolean  @default(true)
+  routesFrom  Route[]  @relation("RouteDestination")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Route {
+  id            String      @id @default(cuid())
+  origin        String
+  destinationId String
+  destination   Destination @relation("RouteDestination", fields: [destinationId], references: [id])
+  durationMins  Int?
+  active        Boolean     @default(true)
+  trips         Trip[]
+  basePrice     Decimal?    @db.Decimal(10, 2)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  @@index([destinationId, active])
+}
+
+model Vehicle {
+  id          String        @id @default(cuid())
+  name        String
+  type        String
+  capacity    Int
+  plateNumber String?       @unique
+  status      VehicleStatus @default(ACTIVE)
+  amenities   Json?
+  image       String?
+  trips       Trip[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Trip {
+  id             String      @id @default(cuid())
+  routeId        String
+  route          Route       @relation(fields: [routeId], references: [id])
+  vehicleId      String?
+  vehicle        Vehicle?    @relation(fields: [vehicleId], references: [id])
+  departureAt    DateTime
+  arrivalAt      DateTime?
+  price          Decimal     @db.Decimal(10, 2)
+  capacity       Int
+  reservedSeats  Int         @default(0)
+  status         TripStatus  @default(SCHEDULED)
+  bookings       Booking[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  @@index([routeId, departureAt, status])
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  reference      String        @unique
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id])
+  tripId         String
+  trip           Trip          @relation(fields: [tripId], references: [id])
+  passengers     Int
+  pickupLocation String?
+  totalAmount    Decimal       @db.Decimal(10, 2)
+  status         BookingStatus @default(PENDING)
+  paymentStatus  PaymentStatus @default(PENDING)
+  paymentMethod  PaymentMethod?
+  paymentRef     String?
+  qrToken        String?       @unique
+  expiresAt      DateTime?
+  passengerData  Passenger[]
+  payment        Payment?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  @@index([tripId, status])
+  @@index([userId, createdAt])
+}
+
+model Passenger {
+  id           String  @id @default(cuid())
+  bookingId    String
+  booking      Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  fullName     String
+  phone        String?
+  email        String?
+  idNumber     String?
+  specialNotes String?
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  bookingId       String        @unique
+  booking         Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  provider        String
+  providerRef     String?
+  amount          Decimal       @db.Decimal(10, 2)
+  currency        String        @default("EGP")
+  status          PaymentStatus @default(PENDING)
+  rawMetadata     Json?
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  @@index([provider, providerRef])
+}
